@@ -2,19 +2,84 @@
 
 ;(function(){
 
-	function getVectorLength(vec)
+	class Vector
 	{
-		return Math.sqrt(Math.pow(vec.x, 2) + Math.pow(vec.y, 2));
+		constructor(coords)
+		{
+			this._coords = 0;
+			this._normal = 0;
+			this._reverse = 0;
+			this._length = 0;
+
+			this.coords = coords;
+		}
+
+		set coords(data)
+		{
+			this._coords = data;
+			this._normal = null;
+			this._length = null;
+			this._reverse = null;
+		}
+
+		get normal()
+		{
+			if (!this._normal)
+				this._normal = Vector.normalize(this._coords, this._length);
+
+			return this._normal
+		}
+
+		get length()
+		{
+			if (!this._length)
+				this._length = Vector.getLength(this._coords);
+
+			return this._length;
+		}
+
+		get reverse()
+		{
+			if (!this._reverse)
+				this._reverse = Vector.reverse(this._coords);
+
+			return this._reverse;
+		}
 	}
 
-	function normalize(vec, length)
+	Vector.reverse = function(vec)
 	{
-		var length = length || getVectorLength(vec);
+		return vec.map(function(coord){
+			return -coord
+		});
+	}
 
-        return {
-        	x : vec.x / length,
-        	y : vec.y / length
-        }
+	Vector.normalize = function(vec, length)
+	{
+		var length = length || Vector.getLength(vec);
+
+		return vec.map(function(coord){
+			return coord / length;
+		});
+	}
+
+	Vector.getLength = function(vec)
+	{
+		var sum = 0;
+
+		vec.forEach(function(coord){
+			sum += Math.pow(coord, 2);
+		});
+
+		return Math.sqrt(sum);
+	}
+
+	Vector.multiply = function(vec_1, vec_2)
+	{
+		if (typeof vec_2 == "number")
+			return vec_1.map(function(coord){
+				return coord * vec_2;
+			});
 	}
 
 	class Chunk
@@ -30,12 +95,12 @@
 		init(options)
 		{
 			var defaults = {
-				sens : 0.5,
-				radius : 100,
+				sens : 0.2,
+				radius : 0,
 				type : "scroll",
 				background : false,
 				rolltype : "vertical",
-				direction : "revers"
+				reverse : false
 			}
 
 			this.addSettings(options, defaults);
@@ -45,9 +110,6 @@
 				y : coords.top,
 				x : coords.left
 			}
-
-			if (this.settings.radius)
-				this.element.style.transition = "0.25s";
 
 			this.width = this.$element.width();
 			this.height = this.$element.height();
@@ -93,38 +155,31 @@
 
 			list.forEach(function(chunk){
 
-				var vec = {
-						x : coords.x - chunk.winPos.x - (chunk.width / 2),
-						y : coords.y - chunk.winPos.y - (chunk.height / 2)
-					}
+				var radius = +chunk.settings.radius,
+					sens = +chunk.settings.sens,
+					vector = [
+						coords.x - chunk.winPos.x - (chunk.width / 2),
+						coords.y - chunk.winPos.y - (chunk.height / 2)
+					],
+					distance = Vector.getLength(vector);
 
 				if (chunk.settings.reverse)
+					vector = Vector.reverse(vector);
+
+				if (radius && distance > radius)
 				{
-					vec.x = -vec.x;
-					vec.y = -vec.y;
+					vector = Vector.normalize(vector);
+					vector = Vector.multiply(vector, radius);
 				}
-				
-				var distance = getVectorLength(vec);
 
-				// self.translate({
-				// 	element : chunk.element,
-				// 	distance : distance,
-				// 	coords : vec,
-				// 	sens : chunk.settings.sens,
-				// 	radius : chunk.settings.radius
-				// });
-
-				if (chunk.settings.radius && distance > +chunk.settings.radius)
-
-
-				self.translate(chunk.element, vec, sens);
+				self.translate(chunk.element, vector, sens);
 
 			});
 		}
 
-		translate(element, coords, sens)
+		translate(element, vec, sens)
 		{
-			element.style.transform = "translate(" + coords.x * sens + "px ," + coords.y * sens + "px)";
+			element.style.transform = "translate(" + vec[0] * sens + "px ," + vec[1] * sens + "px)";
 		}
 
 		translate_(data)

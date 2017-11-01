@@ -8,6 +8,6 @@
     <script src="paralax.js"></script>
 </head>
 <body style="height: 2000px">
-    <div class="asd paralax" data-sens="0.1" data-type="mouse" data-radius="500" data-delay="250"></div>
+    <div class="asd paralax" data-sens="0.1" data-reverse="true" data-type="mouse"></div>
 </body>
 </html>
