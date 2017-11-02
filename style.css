@@ -10,3 +10,14 @@
     margin: auto;
     z-index: 1;
 }
+
+.qwe {
+    width: 100%;
+    height: 500px;
+    position: absolute;
+    top: 5000px;
+    left: 0;
+    right: 0;
+    margin: auto;
+    z-index: 1;
+}

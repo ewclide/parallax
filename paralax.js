@@ -14,6 +14,11 @@
 			this.coords = coords;
 		}
 
+		get coords()
+		{
+			return this._coords;
+		}
+
 		set coords(data)
 		{
 			this._coords = data;
@@ -44,6 +49,11 @@
 				this._reverse = Vector.reverse(this._coords);
 
 			return this._reverse;
+		}
+
+		multiply(vec)
+		{
+			this._coords = Vector.multiply(this._coords, vec.coords);
 		}
 	}
 
@@ -94,27 +104,103 @@
 
 		init(options)
 		{
-			var defaults = {
-				sens : 0.2,
-				radius : 0,
-				type : "scroll",
-				background : false,
-				rolltype : "vertical",
-				reverse : false
-			}
+			var self = this,
+				coords = this.element.getBoundingClientRect(),
+				defaults = {
+					sens : 0.2,
+					radius : 0,
+					type : "scroll",
+					background : false,
+					rolltype : "along",
+					reverse : false
+				}
 
 			this.addSettings(options, defaults);
 
-			var coords = this.element.getBoundingClientRect();
-			this.winPos = {
-				y : coords.top,
-				x : coords.left
-			}
+			if (this.settings.background) this.translateType = "background";
+			else this.translateType = "element";
 
 			this.width = this.$element.width();
 			this.height = this.$element.height();
 
-			console.log(this)
+			this.pos = {
+				x : coords.left + (this.width / 2),
+				y : coords.top + (this.height / 2)
+			}
+
+			if (this.settings.background)
+			{
+				var img = document.createElement("img");
+					img.src = this.settings.background;
+					img.onload = function()
+					{
+						self.imgPos = {
+							x : (self.width - img.width) / 2,
+							y : (self.height - img.height) / 2
+						}
+					}
+
+				this.element.style.background = "url(" + this.settings.background + ")";
+				this.element.style.backgroundPosition = "50%";
+			}
+		}
+
+		get offsetTop()
+		{
+			return this.element.getBoundingClientRect().top - this.height / 2;
+		}
+
+		get active()
+		{
+			var pos = window.innerHeight - this.element.getBoundingClientRect().top;
+
+			if (pos > 0 && pos < window.innerHeight + this.height) return true;
+			else return false;
+		}
+
+		translate(vector, distance)
+		{
+			var sens = +this.settings.sens,
+				radius = +this.settings.radius;
+
+			if (this.settings.type == "scroll")
+			{
+				if (this.settings.rolltype == "along")
+					vector = [ 0, 1 ];
+
+				else if (this.settings.rolltype == "across")
+					vector = [ 1, 0 ];
+			}
+
+			if (this.settings.reverse == "true")
+				vector = Vector.reverse(vector);
+
+			distance = distance * sens;
+
+			if (radius && distance > radius)
+				distance = radius;
+
+			vector = Vector.multiply(vector, distance);
+
+			this._translate[this.translateType](vector);
+		}
+
+		get _translate()
+		{
+			var fn = {},
+				self = this;
+
+			fn.background = function(vec)
+			{
+				vec[0] = vec[0] + self.imgPos.x;
+				vec[1] = vec[1] + self.imgPos.y;
+				self.element.style.backgroundPosition = vec[0] + "px " + vec[1] + "px";
+			}
+			fn.element = function(vec)
+			{
+				self.element.style.transform = "translate(" + vec[0] + "px ," + vec[1] + "px)";
+			}
+			return fn;
 		}
 
 		addSettings(options, defaults)
@@ -136,76 +222,61 @@
 	{
 		constructor()
 		{
-			this.scroll = [];
-			this.mouse = [];
+			this.scrollList = [];
+			this.mouseList = [];
 		}
 
 		add(element)
 		{
 			if (element.settings.type == "scroll")
-				this.scroll.push(element);
+				this.scrollList.push(element);
 
 			else if (element.settings.type == "mouse")
-				this.mouse.push(element);
+				this.mouseList.push(element);
 		}
 
-		update(list, coords)
+		get update()
 		{
-			var self = this;
+			var self = this,
+				fn = {};
 
-			list.forEach(function(chunk){
+			fn.onMouseMove = function(coords)
+			{
+				self.mouseList.forEach(function(chunk){
+					if (chunk.active)
+					{
+						var vector = [ coords.x - chunk.pos.x, coords.y - chunk.pos.y ],
+							distance = Vector.getLength(vector);
 
-				var radius = +chunk.settings.radius,
-					sens = +chunk.settings.sens,
-					vector = [
-						coords.x - chunk.winPos.x - (chunk.width / 2),
-						coords.y - chunk.winPos.y - (chunk.height / 2)
-					],
-					distance = Vector.getLength(vector);
+						vector = Vector.normalize(vector);
 
-				if (chunk.settings.reverse)
-					vector = Vector.reverse(vector);
-
-				if (radius && distance > radius)
-				{
-					vector = Vector.normalize(vector);
-					vector = Vector.multiply(vector, radius);
-				}
-
-				self.translate(chunk.element, vector, sens);
-
-			});
-		}
-
-		translate(element, vec, sens)
-		{
-			element.style.transform = "translate(" + vec[0] * sens + "px ," + vec[1] * sens + "px)";
-		}
-
-		translate_(data)
-		{
-			if (data.radius && data.distance <= +data.radius)
-				data.element.style.transform = "translate(" + data.coords.x * data.sens + "px ," + data.coords.y * data.sens + "px)";
-			else if (!data.radius)
-				data.element.style.transform = "translate(" + data.coords.x * data.sens + "px ," + data.coords.y * data.sens + "px)";
+						chunk.translate(vector, distance);
+					}
+				});
+			}
+			fn.onScroll = function()
+			{
+				self.scrollList.forEach(function(chunk){
+					if (chunk.active)
+						chunk.translate([0, 1], chunk.offsetTop);
+				});
+			}
+			return fn;
 		}
 
 		start()
 		{
 			var self = this;
 
-			console.log(this);
-
 			document.addEventListener("scroll", function(e){
-				//paralax.update();
+				self.update.onScroll();
 			});
 
 			document.addEventListener("mousemove", function(e){
-				var coords = {
+				self.update.onMouseMove({
 					x : e.clientX,
 					y : e.clientY
-				};
-				self.update(self.mouse, coords);
+				});
 			});
 		}
 	}

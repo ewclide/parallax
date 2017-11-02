@@ -7,7 +7,7 @@
     <script src="jquery.js"></script>
     <script src="paralax.js"></script>
 </head>
-<body style="height: 2000px">
-    <div class="asd paralax" data-sens="0.1" data-reverse="true" data-type="mouse"></div>
+<body style="margin: 0; height: 10000px">
+    <div class="qwe paralax" data-sens="0.3" data-background="back.jpg" data-reverse="true" data-type="mouse" data-rolltype="along"></div>
 </body>
 </html>
