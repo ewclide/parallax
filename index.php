@@ -7,7 +7,12 @@
     <script src="jquery.js"></script>
     <script src="paralax.js"></script>
 </head>
-<body style="margin: 0; height: 10000px">
-    <div class="qwe paralax" data-sens="0.3" data-background="back.jpg" data-reverse="true" data-type="mouse" data-rolltype="along"></div>
+<body style="margin: 0; height: 3000px">
+    <div class="wrap paralax" data-sens="0.5" data-background="back.jpg" data-reverse="true">
+    	<div class="box paralax" data-sens="0.3" data-reverse="true" data-rolltype="across">
+    		<p>Paralax effect</p>
+    		<span>by ewclide</span>
+    	</div>
+    </div>
 </body>
 </html>
