@@ -159,7 +159,7 @@
 			var offset = 0;
 
 			if (this.onStartPage) offset = window.pageYOffset - Math.floor(window.pageYOffset / this.scrollHeight) * this.scrollHeight;
-			else offset = this.element.getBoundingClientRect().top;
+			else offset = -this.element.getBoundingClientRect().top;
 
 			return offset;
 		}

@@ -13,7 +13,7 @@
     		<p>Paralax effect</p>
     		<span>by ewclide</span>
     	</div>
-        <div class="snow paralax" data-sens="0.8" data-background="snow.png" data-reverse="true"></div>
+        <div class="snow paralax" data-sens="0.8" data-background="snow.png"></div>
     </div>
 </body>
 </html>
