@@ -112,7 +112,7 @@
 					type : "scroll",
 					background : false,
 					direction : false,
-					reverse : false
+					reverse : "false"
 				}
 
 			this.addSettings(options, defaults);
@@ -130,6 +130,12 @@
 
 			if (!this.settings.direction && this.settings.type == "scroll")
 				this.settings.direction = "y";
+
+			if (this.settings.type == "scroll")
+			{
+				this.onStartPage = this.element.getBoundingClientRect().top + window.pageYOffset < window.innerHeight ? true : false;
+				this.scrollHeight = window.innerHeight * 3;
+			}
 
 			if (this.settings.background)
 			{
@@ -150,7 +156,12 @@
 
 		get offsetTop()
 		{
-			return this.element.getBoundingClientRect().top - this.height / 2;
+			var offset = 0;
+
+			if (this.onStartPage) offset = window.pageYOffset - Math.floor(window.pageYOffset / this.scrollHeight) * this.scrollHeight;
+			else offset = this.element.getBoundingClientRect().top;
+
+			return offset;
 		}
 
 		get active()
@@ -233,6 +244,7 @@
 			fn.onMouseMove = function(coords)
 			{
 				self.mouseList.forEach(function(chunk){
+
 					if (chunk.active)
 					{
 						var vector = [ coords.x - chunk.pos.x, coords.y - chunk.pos.y ],
