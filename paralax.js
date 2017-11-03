@@ -111,7 +111,7 @@
 					radius : 0,
 					type : "scroll",
 					background : false,
-					rolltype : "along",
+					direction : false,
 					reverse : false
 				}
 
@@ -127,6 +127,9 @@
 				x : coords.left + (this.width / 2),
 				y : coords.top + (this.height / 2)
 			}
+
+			if (!this.settings.direction && this.settings.type == "scroll")
+				this.settings.direction = "y";
 
 			if (this.settings.background)
 			{
@@ -163,14 +166,10 @@
 			var sens = +this.settings.sens,
 				radius = +this.settings.radius;
 
-			if (this.settings.type == "scroll")
-			{
-				if (this.settings.rolltype == "along")
-					vector = [ 0, 1 ];
-
-				else if (this.settings.rolltype == "across")
-					vector = [ 1, 0 ];
-			}
+			if (this.settings.direction == "x")
+				vector[1] = 0;
+			else if (this.settings.direction == "y")
+				vector[0] = 0;
 
 			if (this.settings.reverse == "true")
 				vector = Vector.reverse(vector);
@@ -182,25 +181,16 @@
 
 			vector = Vector.multiply(vector, distance);
 
-			this._translate[this.translateType](vector);
-		}
-
-		get _translate()
-		{
-			var fn = {},
-				self = this;
-
-			fn.background = function(vec)
+			if (this.settings.background)
 			{
-				vec[0] = vec[0] + self.imgPos.x;
-				vec[1] = vec[1] + self.imgPos.y;
-				self.element.style.backgroundPosition = vec[0] + "px " + vec[1] + "px";
+				vector[0] = vector[0] + this.imgPos.x;
+				vector[1] = vector[1] + this.imgPos.y;
+				this.element.style.backgroundPosition = vector[0] + "px " + vector[1] + "px";
 			}
-			fn.element = function(vec)
+			else
 			{
-				self.element.style.transform = "translate(" + vec[0] + "px ," + vec[1] + "px)";
+				this.element.style.transform = "translate(" + vector[0] + "px ," + vector[1] + "px)";
 			}
-			return fn;
 		}
 
 		addSettings(options, defaults)
@@ -258,7 +248,7 @@
 			{
 				self.scrollList.forEach(function(chunk){
 					if (chunk.active)
-						chunk.translate([0, 1], chunk.offsetTop);
+						chunk.translate([1, 1], chunk.offsetTop);
 				});
 			}
 			return fn;

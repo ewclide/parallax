@@ -8,12 +8,12 @@
 
 ### Agruments
 
-- sens (0.2)
-- radius (0)
-- type ("scroll")
-- background (false)
-- rolltype ("along")
-- reverse (false)
+- sens
+- radius
+- type
+- background
+- direction
+- reverse
 
 -------------
 
@@ -29,7 +29,7 @@
 		 data-radius="500"
 		 data-type="mouse"
 		 data-background="image.jpg"
-		 data-rolltype="across"
+		 data-direction="x"
 		 data-reverse="true"
 	></div>
 ```
@@ -40,7 +40,7 @@
 		radius : "500",
 		type : "mouse",
 		background : "image.jpg",
-		rolltype : "across",
+		direction : "x",
 		reverse : true
 	});
 ```
