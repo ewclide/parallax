@@ -105,7 +105,6 @@
 		init(options)
 		{
 			var self = this,
-				coords = this.element.getBoundingClientRect(),
 				defaults = {
 					sens : 0.2,
 					radius : 0,
@@ -117,15 +116,12 @@
 
 			this.addSettings(options, defaults);
 
-			if (this.settings.background) this.translateType = "background";
-			else this.translateType = "element";
-
 			this.width = this.$element.width();
 			this.height = this.$element.height();
-
-			this.pos = {
-				x : coords.left + (this.width / 2),
-				y : coords.top + (this.height / 2)
+			this.pos = this.getPos();
+			this.imgPos = {
+				x : 0, 
+				y : 0
 			}
 
 			if (!this.settings.direction && this.settings.type == "scroll")
@@ -154,13 +150,23 @@
 			}
 		}
 
+		getPos()
+		{
+			var offset = this.element.getBoundingClientRect();
+
+			return {
+				x : offset.left + (this.width / 2) - Math.floor(offset.left / window.innerHeight) * window.innerHeight,
+				y : offset.top + (this.height / 2) - Math.floor(offset.top / window.innerHeight) * window.innerHeight
+			}
+		}
+
 		get offsetTop()
 		{
 			var offset = 0;
 
 			if (this.onStartPage) offset = window.pageYOffset - Math.floor(window.pageYOffset / this.scrollHeight) * this.scrollHeight;
-			else offset = -this.element.getBoundingClientRect().top;
-
+			else offset = this.element.getBoundingClientRect().top;
+			//offset = window.pageYOffset - Math.floor(window.pageYOffset / this.scrollHeight) * this.scrollHeight;
 			return offset;
 		}
 
@@ -194,8 +200,8 @@
 
 			if (this.settings.background)
 			{
-				vector[0] = vector[0] + this.imgPos.x;
-				vector[1] = vector[1] + this.imgPos.y;
+				vector[0] += this.imgPos.x;
+				vector[1] += this.imgPos.y;
 				this.element.style.backgroundPosition = vector[0] + "px " + vector[1] + "px";
 			}
 			else
@@ -219,7 +225,7 @@
 		}
 	}
 
-	class Paralax
+	class Parallax
 	{
 		constructor()
 		{
@@ -283,22 +289,22 @@
 		}
 	}
 
-	$.fn.paralax = function(options)
+	$.fn.parallax = function(options)
     {
-    	var paralax = new Paralax();
+    	var parallax = new Parallax();
 
         this.each(function(){
             if (options) options.element = $(this);
             else options = { element: $(this) };
             var chunk = new Chunk(options);
-            paralax.add(chunk);
+            parallax.add(chunk);
         });
 
-        paralax.start();
+        parallax.start();
     }
 
     $(document).ready(function(){
-        $('.paralax').paralax();
+        $('.parallax').parallax();
     });
 
 })();
