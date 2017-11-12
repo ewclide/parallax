@@ -170,11 +170,11 @@
 			return offset;
 		}
 
-		get active()
+		get visible()
 		{
-			var pos = window.innerHeight - this.element.getBoundingClientRect().top;
+			var offsetTop = this.element.getBoundingClientRect().top;
 
-			if (pos > 0 && pos < window.innerHeight + this.height) return true;
+			if (offsetTop > 0 - this.height && offsetTop < window.innerHeight) return true;
 			else return false;
 		}
 
@@ -250,8 +250,7 @@
 			fn.onMouseMove = function(coords)
 			{
 				self.mouseList.forEach(function(chunk){
-
-					if (chunk.active)
+					if (chunk.visible)
 					{
 						var vector = [ coords.x - chunk.pos.x, coords.y - chunk.pos.y ],
 							distance = Vector.getLength(vector);
@@ -265,7 +264,7 @@
 			fn.onScroll = function()
 			{
 				self.scrollList.forEach(function(chunk){
-					if (chunk.active)
+					if (chunk.visible)
 						chunk.translate([1, 1], chunk.offsetTop);
 				});
 			}
